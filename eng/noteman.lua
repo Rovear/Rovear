@@ -1,43 +1,41 @@
--- Access PlayerGui
+-- Get the local player and their PlayerGui
 local player = game.Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui", 5)
-
 if not playerGui then
 	error("PlayerGui not found! Script terminated.")
 end
 
--- Obtain ScreenGui
-local screenGui = playerGui:WaitForChild("ScreenGui", 5)
-if not screenGui then
-	error("ScreenGui not found! Script terminated.")
+-- Retrieve the EngineGui
+local engineGui = playerGui:WaitForChild("EngineGui", 5)
+if not engineGui then
+	error("EngineGui not found! Script terminated.")
 end
 
--- Locate Pannel (Frame)
-local pannel = screenGui:FindFirstChild("Pannel")
+-- Locate the Pannel frame
+local pannel = engineGui:FindFirstChild("Pannel")
 if not pannel or not pannel:IsA("Frame") then
 	error("Pannel not found or is not a Frame! Script terminated.")
 end
 
--- Enable ClipsDescendants on Pannel so notes don't overflow
+-- Prevent content inside Pannel from showing beyond its boundaries
 pannel.ClipsDescendants = true
 
--- Define the image IDs for each note
+-- Asset IDs for each note ImageLabel
 local imageIds = {
-	"rbxassetid://98414606871978", -- Image for Note1
-	"rbxassetid://99284842825850", -- Image for Note2
-	"rbxassetid://99284842825850", -- Image for Note3
-	"rbxassetid://98414606871978"  -- Image for Note4
+	"rbxassetid://98414606871978", 
+	"rbxassetid://99284842825850",
+	"rbxassetid://99284842825850",
+	"rbxassetid://98414606871978"
 }
 
--- Layout config
+-- Each note will take up an equal fraction of the width and full height
 local totalNotes = #imageIds
-local noteWidth = 1 / totalNotes  -- fraction of Pannel's width each note occupies
-local bottomHeight = 0.2         -- each note takes up 20% of Pannel's height at bottom
+local noteWidth = 1 / totalNotes  -- fraction of Pannel's total width
 
 for i, assetId in ipairs(imageIds) do
 	local noteName = "Note" .. i
 
-	-- Either find the existing ImageLabel or create a new one
+	-- Either find an existing note or create a new one
 	local imageLabel = pannel:FindFirstChild(noteName)
 	if not imageLabel then
 		imageLabel = Instance.new("ImageLabel")
@@ -46,17 +44,17 @@ for i, assetId in ipairs(imageIds) do
 	end
 
 	if imageLabel and imageLabel:IsA("ImageLabel") then
-		-- Assign the image
+		-- Configure the appearance and image asset
 		imageLabel.Image = assetId
 		imageLabel.BackgroundTransparency = 1
 		imageLabel.ScaleType = Enum.ScaleType.Fit
 
-		-- Stretch them side by side along bottom
-		imageLabel.AnchorPoint = Vector2.new(0, 1)    -- Anchor by the bottom edge
-		imageLabel.Position = UDim2.new(noteWidth*(i-1), 0, 1, 0)  -- place them bottom-aligned
-		imageLabel.Size = UDim2.new(noteWidth, 0, bottomHeight, 0) -- fill horizontal fraction, use 'bottomHeight' for vertical size
+		-- Fill the entire height, flush at the bottom
+		imageLabel.AnchorPoint = Vector2.new(0, 1)                 -- anchor bottom edge
+		imageLabel.Position = UDim2.new(noteWidth * (i - 1), 0, 1, 0)
+		imageLabel.Size = UDim2.new(noteWidth, 0, 1, 0)            -- occupy full height
 
-		-- Remove any existing UIAspectRatioConstraint so they fill fully
+		-- Remove any aspect ratio constraint to let them fully fill the space
 		local aspectConstraint = imageLabel:FindFirstChild("UIAspectRatioConstraint")
 		if aspectConstraint then
 			aspectConstraint:Destroy()
